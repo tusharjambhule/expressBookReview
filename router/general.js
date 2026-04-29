@@ -16,9 +16,14 @@ let books = {
   "10": { author: "Homer", title: "The Odyssey", reviews: {} }
 };
 
-/* Get all books */
+/* Get all books using Promise */
 public_users.get("/", function (req, res) {
-  return res.status(200).json(books);
+  const getBooks = new Promise((resolve, reject) => {
+    resolve(books);
+  });
+  getBooks.then((booksList) => {
+    res.status(200).json(booksList);
+  });
 });
 
 /* Get by ISBN using Promise callbacks with Axios */
@@ -28,7 +33,12 @@ public_users.get("/isbn/:isbn", function (req, res) {
   axios
     .get("http://localhost:5000/")
     .then((response) => {
-      return res.status(200).json(response.data[isbn]);
+      const book = response.data[isbn];
+      if (book) {
+        return res.status(200).json(book);
+      } else {
+        return res.status(404).json({ message: "Book not found" });
+      }
     })
     .catch(() => {
       return res.status(500).json({ message: "Error retrieving ISBN book" });
@@ -41,12 +51,15 @@ public_users.get("/author/:author", async function (req, res) {
 
   try {
     const response = await axios.get("http://localhost:5000/");
-
     const result = Object.values(response.data).filter(
       (book) => book.author.toLowerCase() === author
     );
 
-    return res.status(200).json(result);
+    if (result.length > 0) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(404).json({ message: "No books found for this author" });
+    }
   } catch (error) {
     return res.status(500).json({ message: "Error retrieving author books" });
   }
@@ -58,12 +71,15 @@ public_users.get("/title/:title", async function (req, res) {
 
   try {
     const response = await axios.get("http://localhost:5000/");
-
     const result = Object.values(response.data).filter(
       (book) => book.title.toLowerCase() === title
     );
 
-    return res.status(200).json(result);
+    if (result.length > 0) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(404).json({ message: "No books found for this title" });
+    }
   } catch (error) {
     return res.status(500).json({ message: "Error retrieving title books" });
   }
@@ -72,14 +88,19 @@ public_users.get("/title/:title", async function (req, res) {
 /* Get Reviews */
 public_users.get("/review/:isbn", function (req, res) {
   const isbn = req.params.isbn;
+  const book = books[isbn];
 
-  if (Object.keys(books[isbn].reviews).length === 0) {
+  if (!book) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  if (Object.keys(book.reviews).length === 0) {
     return res.status(200).json({
       message: "No reviews found for this book"
     });
   }
 
-  return res.status(200).json(books[isbn].reviews);
+  return res.status(200).json(book.reviews);
 });
 
 module.exports.general = public_users;

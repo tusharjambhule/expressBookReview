@@ -66,7 +66,7 @@ regd_users.post("/login", (req, res) => {
 });
 
 /* Add or Modify Review */
-regd_users.put("/auth/review/:isbn", (req, res) => {
+regd_users.put("/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const review = req.query.review;
   const username = req.session.authorization.username;
@@ -80,7 +80,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 });
 
 /* Delete Review */
-regd_users.delete("/auth/review/:isbn", (req, res) => {
+regd_users.delete("/review/:isbn", (req, res) => {
   const isbn = req.params.isbn;
   const username = req.session.authorization.username;
 
